@@ -82,4 +82,4 @@ async def services(interaction: discord.Interaction, base_int: float, alliance_l
     channel = client.get_channel(1019614707394556025)
     await channel.send(embed=embed, view=Services())
 
-client.run('MTAxODk4OTM4MTc3MzY5NzA4NQ.GwRM_n.5ipGMvrdpJGbDFRYL7YrTOKKRodTuLpOo9xJeM')
+client.run('REDACTED')
