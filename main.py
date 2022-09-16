@@ -12,13 +12,41 @@ class ticket_embed(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
-    @discord.ui.button(label = "Start a Loan Application", style = discord.ButtonStyle.blurple, custom_id = "alliance_loan")
+    @discord.ui.button(label = "Alliance Loan App.", style = discord.ButtonStyle.blurple, custom_id = "alliance_loan")
     async def ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         overwrites = {
         interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
         interaction.user: discord.PermissionOverwrite(read_messages = True, view_channel = True),
     }
-        channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}", overwrites=overwrites) # Problematic Line
+        channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-alliance-loan", overwrites=overwrites) # Problematic Line
+        await interaction.response.defer()
+        
+    @discord.ui.button(label = "Personal Loan App.", style = discord.ButtonStyle.grey, custom_id = "personal_loan")
+    async def ticket2(self, interaction: discord.Interaction, button: discord.ui.Button):
+        overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        interaction.user: discord.PermissionOverwrite(read_messages = True, view_channel = True),
+    }
+        channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-personal-loan", overwrites=overwrites) # Problematic Line
+        await interaction.response.defer()
+
+    @discord.ui.button(label = "Advertising", style = discord.ButtonStyle.red, custom_id = "advertising")
+    async def ticket3(self, interaction: discord.Interaction, button: discord.ui.Button):
+        overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        interaction.user: discord.PermissionOverwrite(read_messages = True, view_channel = True),
+    }
+        channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-advertising", overwrites=overwrites) # Problematic Line
+        await interaction.response.defer()
+
+    @discord.ui.button(label = "Econ Sheet", style = discord.ButtonStyle.green, custom_id = "econ_sheet")
+    async def ticket4(self, interaction: discord.Interaction, button: discord.ui.Button):
+        overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        interaction.user: discord.PermissionOverwrite(read_messages = True, view_channel = True),
+    }
+        channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-econ-sheet", overwrites=overwrites) # Problematic Line
+        await interaction.response.defer()
 
 class aclient(discord.Client):
     def __init__(self):
@@ -41,7 +69,7 @@ tree = app_commands.CommandTree(client)
 
 @tree.command(name = "tickets", description = "Launch the ticketing system!")
 async def ticketing(interaction: discord.Interaction):
-    embed = discord.Embed(title = "Click the button below to open a Loan Application!")
+    embed = discord.Embed(title = "Available CDP Services", description = "Use the buttons below to open a ticket to discuss your new Alliance Loan, Personal Loan, Advertising Campaign, or Custom Econ Sheet!",color = 0x0400ff)
     await interaction.channel.send(embed = embed, view = ticket_embed())
     await interaction.response.send_message("Ticket system has been launched!", ephemeral = True)
     
