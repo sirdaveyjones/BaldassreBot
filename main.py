@@ -36,7 +36,9 @@ class ticket_embed(discord.ui.View):
         }
 			channel_cat = discord.utils.get(interaction.guild.categories, id=966697552588201994)
 			channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-alliance-loan", category = channel_cat, overwrites=overwrites) # Problematic Line
-			await channel.send(f"Here is your ticket, {interaction.user.mention}!")
+			await channel.send(f"""Here is your Loan Application ticket, {interaction.user.mention}!
+            
+Use the `/application` command to provide our staff with needed information regarding your loan. This will be the baseline that our staff uses to establish your eligibility for a loan with us.""")
 			await interaction.response.defer()
         
 	@discord.ui.button(label = "Personal Loan App.", style = discord.ButtonStyle.grey, custom_id = "personal_loan")
@@ -51,7 +53,11 @@ class ticket_embed(discord.ui.View):
         }
 			channel_cat = discord.utils.get(interaction.guild.categories, id=996859448133959710)
 			channel = await interaction.guild.create_text_channel(name = f"{interaction.user.name}-personal-loan", category = channel_cat,  overwrites=overwrites) # Problematic Line
-			await channel.send(f"Here is your ticket, {interaction.user.mention}!")
+			await channel.send(f"""Here is your Loan Application ticket, {interaction.user.mention}!
+            
+Use the `/application` command to provide our staff with needed information regarding your loan. This will be the baseline that our staff uses to establish your eligibility for a loan with us.
+
+*Reminder: If you have fewer than 18 Cities, you are not eligible for a loan with CDP Financial. There are no exceptions made.""")
 			await interaction.response.defer()
 	@discord.ui.button(label = "Advertising", style = discord.ButtonStyle.red, custom_id = "advertising")
 	async def ticket3(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -109,13 +115,16 @@ async def ticketing(interaction: discord.Interaction):
     await interaction.response.send_message("Ticket system has been launched!", ephemeral = True)
 
 @tree.command(name = "application", description = "Apply for a loan with CDP Financial", guild = discord.Object(id = 966502687925497866))
-async def loan_app(interaction: discord.Interaction, nation_id: int, amt_requested: float, weeks: int):
-    weekly_principle = amt_requested / weeks
-    embed = discord.Embed(title="CDP Financial - Loan Application", description= "**Applicant ID:** " + str(nation_id) + """
+async def loan_app(interaction: discord.Interaction, nation_id: int, amt_requested: float, interest_requested: float, weeks: int):
+    total_interest = ((interest_requested*amt_requested/(1-(1+interest_requested)**-weeks))*weeks)-amt_requested
+    weekly_pmt = (total_interest + amt_requested)/weeks
+    embed = discord.Embed(title="CDP Financial - Loan Application", url = 'https://politicsandwar.com/nation/id='+str(nation_id), description= "**Applicant ID:** " + str(nation_id) + """
     **Principle Requested:** """ + str('${:,.2f}'.format(amt_requested)) + """
     **Requested Repayment Term:** """ + str(weeks) + """ Weeks
+    **Requested Interest Rate:** """ + str('{:.1%}'.format(interest_requested)) + """
     
-    ** Calculated Principle Payments:** """ + str('${:,.2f}'.format(weekly_principle)), color = 0x400ff)
+    **Calculated Total Interest:** """ + str('${:,.2f}'.format(total_interest)) + """
+    **Calculated Payments:** """ + str('${:,.2f}'.format(weekly_pmt)), color = 0x400ff)
     await interaction.response.send_message(embed=embed, view=application())
 
 @tree.command(name = "services", description = "Create services window in the assigned channel.", guild = discord.Object(id = 966502687925497866))
