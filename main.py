@@ -1,8 +1,18 @@
 import discord
 from discord import app_commands
 import os
+import pymysql
 
 client = discord.Client(intents = discord.Intents.all())
+
+cdp_db = pymysql.connect(
+    host = 'localhost',
+    user = 'root',
+    password = '',
+    database = 'cdp'
+)
+
+cursor = cdp_db.cursor()
 
 class Services(discord.ui.View):
     def __init__(self):
@@ -113,6 +123,12 @@ async def ticketing(interaction: discord.Interaction):
     embed = discord.Embed(title = "Available CDP Services", description = "Use the buttons below to open a ticket to discuss your new Alliance Loan, Personal Loan, Advertising Campaign, or Custom Econ Sheet!",color = 0x0400ff)
     await interaction.channel.send(embed = embed, view = ticket_embed())
     await interaction.response.send_message("Ticket system has been launched!", ephemeral = True)
+
+#async def dbtest(interaction: discord.Interaction):
+#    sql = "INSERT INTO loans (ID, PRINCIPLE, INTEREST, BALANCE) VALUES (%s, %s, %s, %s)"
+#    val = ("2065198416516161616165165163", "50", "100", "200")
+#    cursor.execute(sql, val)
+
 
 @tree.command(name = "application", description = "Apply for a loan with CDP Financial", guild = discord.Object(id = 966502687925497866))
 async def loan_app(interaction: discord.Interaction, nation_id: int, amt_requested: float, interest_requested: float, weeks: int):
@@ -267,4 +283,5 @@ async def edit_service(interaction: discord.Interaction, base_int: float, allian
     global servicesembed
     servicesembed = await servicesembed.edit(embed=embed, view=Services())
 
-client.run('REDACTED')
+#my_secret = os.environ['CDP']
+#client.run(my_secret)
