@@ -9,7 +9,8 @@ cdp_db = pymysql.connect(
     host = 'localhost',
     user = 'root',
     password = '',
-    database = 'cdp'
+    database = 'cdp',
+    autocommit = True
 )
 
 cursor = cdp_db.cursor()
@@ -17,18 +18,6 @@ cursor = cdp_db.cursor()
 class Services(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-
-class application(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
-    @discord.ui.button(label = "Approve", style = discord.ButtonStyle.green, custom_id = "approved")
-    async def approveloan(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-
-    @discord.ui.button(label = "Deny", style = discord.ButtonStyle.red, custom_id = "denied")
-    async def denyloan(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
 
 class ticket_embed(discord.ui.View):
 	def __init__(self) -> None:
@@ -124,12 +113,6 @@ async def ticketing(interaction: discord.Interaction):
     await interaction.channel.send(embed = embed, view = ticket_embed())
     await interaction.response.send_message("Ticket system has been launched!", ephemeral = True)
 
-#async def dbtest(interaction: discord.Interaction):
-#    sql = "INSERT INTO loans (ID, PRINCIPLE, INTEREST, BALANCE) VALUES (%s, %s, %s, %s)"
-#    val = ("2065198416516161616165165163", "50", "100", "200")
-#    cursor.execute(sql, val)
-
-
 @tree.command(name = "application", description = "Apply for a loan with CDP Financial", guild = discord.Object(id = 966502687925497866))
 async def loan_app(interaction: discord.Interaction, nation_id: int, amt_requested: float, interest_requested: float, weeks: int):
     total_interest = ((interest_requested*amt_requested/(1-(1+interest_requested)**-weeks))*weeks)-amt_requested
@@ -141,7 +124,50 @@ async def loan_app(interaction: discord.Interaction, nation_id: int, amt_request
     
     **Calculated Total Interest:** """ + str('${:,.2f}'.format(total_interest)) + """
     **Calculated Payments:** """ + str('${:,.2f}'.format(weekly_pmt)), color = 0x400ff)
-    await interaction.response.send_message(embed=embed, view=application())
+    sql = "INSERT INTO loans (ID, PRINCIPLE, INTEREST, BALANCE, ACTIVE) VALUES (%s, %s, %s, %s, %s)"
+    val = (nation_id, amt_requested, interest_requested, (total_interest + amt_requested), 0)
+    cursor.execute(sql, val)
+    await interaction.response.send_message(embed=embed)
+
+@tree.command(name = "accept", description = "Accept a loan application!", guild = discord.Object(id = 966502687925497866))
+async def accept_loan(interaction: discord.Interaction, nation_id: int, interest: float):
+    sql = "UPDATE loans SET ACTIVE = '1' where ID = (%s)"
+    val = (nation_id)
+    cursor.execute(sql,val)
+    get_balance = "SELECT `BALANCE` FROM `loans` WHERE `ID`=%s"
+    cursor.execute(get_balance, (nation_id,))
+    balance = cursor.fetchone()
+    balance = str(balance).replace("(", "")
+    balance = balance.replace(")","")
+    balance = balance.replace("'","")
+    balance = balance.replace(",","")
+    embed = discord.Embed(title="CDP Financial - Loan Issuance", description="""
+    Thank you for requesting a loan with CDP Financial. The loan has been approved on the following terms.
+
+    **Applicant ID:** """ + str(nation_id) + """
+    **Current Balance:** """ + str('${:,.2f}'.format(float(balance))) + """
+    **Interest Rate:** """ + str('{:.1%}'.format(interest)), color =  0x0400ff)
+    await interaction.response.send_message(embed=embed)
+
+#async def dbtest(interaction: discord.Interaction):
+#    sql = "INSERT INTO loans (ID, PRINCIPLE, INTEREST, BALANCE) VALUES (%s, %s, %s, %s)"
+#    val = ("2065198416516161616165165163", "50", "100", "200")
+#    cursor.execute(sql, val)
+
+# class application(discord.ui.View):
+#    def __init__(self):
+#        super().__init__(timeout=None)
+
+#    @discord.ui.button(label = "Approve", style = discord.ButtonStyle.green, custom_id = "approved")
+#    async def approveloan(self, interaction: discord.Interaction, button: discord.ui.Button):
+#        sql2 = "UPDATE loans SET ACTIVE = '1' where ID = (%s)"
+#        val = (applicant_id)
+#        cursor.execute(sql2,val)
+#        await interaction.response.defer()
+
+#    @discord.ui.button(label = "Deny", style = discord.ButtonStyle.red, custom_id = "denied")
+#    async def denyloan(self, interaction: discord.Interaction, button: discord.ui.Button):
+#        await interaction.response.defer()
 
 @tree.command(name = "services", description = "Create services window in the assigned channel.", guild = discord.Object(id = 966502687925497866))
 async def services(interaction: discord.Interaction, base_int: float, alliance_loans: int, pers_loans: int, discord_ads: int, ig_ads: int, econ_sheets: int):
@@ -285,3 +311,4 @@ async def edit_service(interaction: discord.Interaction, base_int: float, allian
 
 #my_secret = os.environ['CDP']
 #client.run(my_secret)
+
